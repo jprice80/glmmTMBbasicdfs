@@ -14,4 +14,6 @@ Encoding: UTF-8
 LazyData: true
 Suggests: 
     knitr,
-    rmarkdown
+    rmarkdown,
+    car
+RoxygenNote: 7.1.1

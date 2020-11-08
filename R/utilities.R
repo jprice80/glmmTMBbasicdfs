@@ -95,17 +95,17 @@ base_aov_dfs<-function(model){
 
   # Define fixed and random terms
 
-  basic_dfs_out$type<-as.character(NA)
+  basic_dfs_out$vartype<-as.character(NA)
 
   for(i in 1:nrow(basic_dfs_out)){
     trm<-basic_dfs_out$terms[i]
 
     if(trm %in% fixed){
-      basic_dfs_out$type[i]<-"fixed"
+      basic_dfs_out$vartype[i]<-"fixed"
     } else if(trm =="(Intercept)") {
-      basic_dfs_out$type[i]<-"fixed"
+      basic_dfs_out$vartype[i]<-"fixed"
     } else {
-      basic_dfs_out$type[i]<-"random"
+      basic_dfs_out$vartype[i]<-"random"
     }
   }
 
