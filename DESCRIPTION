@@ -1,0 +1,17 @@
+Package: glmmTMBbasicdfs
+Type: Package
+Title: Basic Degrees of Freedom Calculations for glmmTMB
+Version: 0.1.0
+Author: Josh Price
+Maintainer: Josh Price <jprice5@utk.edu>
+Description: This package will perform containment and inner-outer degrees of freedom calculations which allows for Analysis of Variance based on the F distribution and parameter estimates based on the t distribution.
+License: AGPL-3
+Depends: 
+    R (>= 3.2.0),
+    glmmTMB,
+    dplyr
+Encoding: UTF-8
+LazyData: true
+Suggests: 
+    knitr,
+    rmarkdown
