@@ -125,8 +125,8 @@ base_aov_dfs<-function(model){
 #'
 #' @return a \code{\link{data.frame}}
 #' @keywords internal
-dataClasses<-function(model){
-  temp<-attr(model$modelInfo$terms$cond$fixed, "dataClasses")
-  out<-data.frame(terms=names(temp), class=as.vector(temp))
+dataClasses <- function(model){
+  temp <- attr(model$modelInfo$terms$cond$fixed, "dataClasses")
+  out <- data.frame(terms=names(temp), class=as.vector(temp))
   return(out)
 }

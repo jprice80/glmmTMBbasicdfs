@@ -64,11 +64,10 @@ inner_outer<-function(model = model, type = type){
   dDF <- fixed$denDf
   Pval <- pf(Fval, nDF, dDF, lower.tail = FALSE)
 
-  aod <- data.frame(numDF = nDF, denDF = dDF, Fvalue = round(Fval, 2), pvalue = round(Pval, 4), row.names = fixed$terms)
-  #row.names(aod) <- fixed$terms
+  aod <- data.frame(numDF = nDF, denDF = dDF, Fvalue = round(Fval, 2), pvalue = round(Pval, 4))
+  row.names(aod) <- fixed$terms
   class(aod) <- c("bdf", "inner_outer", "data.frame")
-  #attr(out, "heading") <- c("Analysis of variance with inner-outer degrees of freedom \n",
-  #                         paste("Response:", names(model$modelInfo$respCol)))
+  attr(aod, "heading") <-  paste("Analysis of Variance Table")
 
   return(aod)
 }
