@@ -11,16 +11,22 @@ inner_outer_aov <- function(model = model, type = type){
 
   TMBaov <- suppressPackageStartupMessages(car::Anova(model, type=type))
 
-  #Pull the DFs associated with each term
+  # Pull the DFs associated with each term
   basic_aov_dfs <- base_aov_dfs(model)
 
-  fixed <- basic_aov_dfs[basic_aov_dfs$vartype=="fixed", ]
+  # Correct the terms if no intercept is estimated
+  if(row.names(TMBaov)[1] == "(Intercept)") {
+    fixed <- basic_aov_dfs[basic_aov_dfs$vartype=="fixed", ]
+  } else {
+    fixed <- basic_aov_dfs[basic_aov_dfs$vartype=="fixed", ][-1, ]
+  }
+
   random <- basic_aov_dfs[basic_aov_dfs$vartype=="random", ]
 
   #sort the data by size to make sure the right df is chosen
-  random <- random[order(random$df), ]
+  random<-random[order(random$df),]
 
-  #Apply the inner-outer DFs
+  # Apply the inner-outer DFs
   fixed$vartype <- NULL
   fixed$denDf <- NA
   for(i in 1:nrow(fixed)){

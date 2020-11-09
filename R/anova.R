@@ -12,14 +12,20 @@
 #'     ddf = \code{inner-outer} primarily corresponds to classic \code{\link{nlme}}
 #'     denominator degrees of freedom calculations. \code{containment} corresponds to the SAS
 #'     default degrees of freedom calculations for generalized linear mixed models.
+#' @param test.statistic designates whether the \code{F} or \code{Chisq} distribution
+#'     is used to compute the ANOVA tables.
 #' @param contr_sum a \code{boolean} indicating whether to apply 'sum to zero'
 #'     contrasts when performing the ANOVA calculation. Default is \code{TRUE}.
+#'
+#' @details Insert details here later
+#' @note Insert notes here later
+#' @references Insert references here later
 #'
 #' @return a \code{data.frame}
 #' @export
 #'
-#' @examples
-anova<-function(model, type = 3, ddf = "inner-outer", contr_sum = TRUE){
+#' @examples Insert examples here later
+anova<-function(model, type = 3, ddf = "inner-outer", test.statistic="F", contr_sum = TRUE){
 
   if (class(model) != "glmmTMB") {
     stop ("Only glmmTMB models are supported")
@@ -37,17 +43,22 @@ anova<-function(model, type = 3, ddf = "inner-outer", contr_sum = TRUE){
   } else if (type == "II" || type == 2) {
     type = 2
   } else {
-    stop ("Specified type not supported")
+    stop ("Specified type not supported at this time")
   }
 
-  if (ddf == "inner-outer") {
-    aov_out <- inner_outer_aov(model, type)
-  } else if (ddf == "containment") {
-    aov_out <- containment_aov(model, type)
+  if(test.statistic == "F"){
+    if (ddf == "inner-outer") {
+      aov_out <- inner_outer_aov(model, type)
+    } else if (ddf == "containment") {
+      aov_out <- containment_aov(model, type)
+    } else {
+      stop ("Only inner-outter and containment methods are supported at this time")
+    }
+  } else if(test.statistic == "Chisq") {
+    aov_out <- suppressForeignCheck(glmmTMB:::Anova.glmmTMB(model, type = type))
   } else {
-    stop ("Only inner-outter and containment methods are supported at this time")
+    cat("Only F and Chisq test statistics are supported at this time")
   }
 
   return(aov_out)
-
 }
