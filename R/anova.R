@@ -41,9 +41,9 @@ anova<-function(model, type = 3, ddf = "inner-outer", contr_sum = TRUE){
   }
 
   if (ddf == "inner-outer") {
-    aov_out <- inner_outer(model, type)
+    aov_out <- inner_outer_aov(model, type)
   } else if (ddf == "containment") {
-    aov_out <- containment(model, type)
+    aov_out <- containment_aov(model, type)
   } else {
     stop ("Only inner-outter and containment methods are supported at this time")
   }
