@@ -47,6 +47,9 @@ inner_outer_aov <- function(model = model, type = type){
             temp<-suppressMessages(model$frame %>% select(rtrm, ftrm) %>% group_by_at(rtrm) %>% summarise(count = n_distinct(!!sym(ftrm), na.rm = TRUE)))
           }
 
+          # Check to see if we have all 1s
+          # If we do, we know we have found the lowest level
+
           if(all(temp$count == 1)){
             fixed$denDf[i] <- random$df[j]
             break;

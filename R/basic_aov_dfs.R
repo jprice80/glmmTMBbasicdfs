@@ -109,5 +109,41 @@ base_aov_dfs<-function(model){
     }
   }
 
+  # Define whether there are associated random slope terms
+  random_terms <- basic_dfs_out[which(basic_dfs_out$vartype == "random"),]
+  random_terms <- random_terms[which(random_terms$terms != "Residuals"),]
+
+  for(i in 1:nrow(random_terms)) {
+    random_effect <- model$modelInfo$reStruc$condReStruc[i]
+    covar <- names(model$modelInfo$reStruc$condReStruc[[i]]$blockCode)
+    random_effect_name <- names(random_effect[1])
+    lhs <- trimws(strsplit(as.character(random_effect_name), "\\| ")[[1]][1])
+    random_terms$slopeterm[i] <- lhs
+    random_terms$covar[i] <- covar
+  }
+
+  basic_dfs_out <- left_join(basic_dfs_out, random_terms, by=c("terms", "df", "vartype"))
+
+  # Determine if we have a random int, slope, or int_and_slope
+  basic_dfs_out$termtype <- as.character(NA)
+  for(i in 1:nrow(basic_dfs_out)){
+
+    slope_term <- basic_dfs_out$slopeterm[i]
+    containsneg1 <- grepl("- 1", slope_term, fixed = TRUE)
+    containspls0 <- grepl("+ 0", slope_term, fixed = TRUE)
+
+    if(!is.na(slope_term) == TRUE){
+      if(slope_term == "1"){
+        basic_dfs_out$termtype[i] <- "int"
+      } else if (containsneg1 == TRUE || containspls0 == TRUE){
+        basic_dfs_out$termtype[i] <- "slope"
+      } else {
+        basic_dfs_out$termtype[i] <- "int_and_slope"
+      }
+    }
+  }
+
   return(basic_dfs_out)
 }
+
+
