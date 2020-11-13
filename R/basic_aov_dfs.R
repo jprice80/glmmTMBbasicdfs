@@ -94,7 +94,6 @@ base_aov_dfs<-function(model){
   basic_dfs_out<-rbind(basic_dfs_out, resids)
 
   # Define fixed and random terms
-
   basic_dfs_out$vartype<-as.character(NA)
 
   for(i in 1:nrow(basic_dfs_out)){

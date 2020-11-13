@@ -9,9 +9,6 @@
 \arguments{
 \item{object}{}
 }
-\value{
-
-}
 \description{
 Print methods
 }

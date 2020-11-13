@@ -4,7 +4,13 @@
 \alias{anova}
 \title{ANOVA Tables using the F distribution for glmmTMB models}
 \usage{
-anova(model, type = 3, ddf = "inner-outer", contr_sum = TRUE)
+anova(
+  model,
+  type = 3,
+  ddf = "inner-outer",
+  test.statistic = "F",
+  contr_sum = TRUE
+)
 }
 \arguments{
 \item{model}{a \code{\link{glmmTMB}} model object}
@@ -17,6 +23,9 @@ ddf = \code{inner-outer} primarily corresponds to classic \code{\link{nlme}}
 denominator degrees of freedom calculations. \code{containment} corresponds to the SAS
 default degrees of freedom calculations for generalized linear mixed models.}
 
+\item{test.statistic}{designates whether the \code{F} or \code{Chisq} distribution
+is used to compute the ANOVA tables.}
+
 \item{contr_sum}{a \code{boolean} indicating whether to apply 'sum to zero'
 contrasts when performing the ANOVA calculation. Default is \code{TRUE}.}
 }
@@ -28,4 +37,16 @@ The \code{anova} function will perform an analysis of variance on glmmTMB
     objects using the F distribution. Denominator degrees of freedom calculations are
     performed using either the \code{\link{nlme}} \code{inner-outer} or \code{containment}
     methods.
+}
+\details{
+Insert details here later
+}
+\note{
+Insert notes here later
+}
+\examples{
+Insert examples here later
+}
+\references{
+Insert references here later
 }
