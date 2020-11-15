@@ -108,6 +108,19 @@ base_aov_dfs<-function(model){
     }
   }
 
+  # Identify the variable classes in the data frame
+  basic_dfs_out$varclass <- as.character(NA)
+  for(i in 1:nrow(basic_dfs_out)) {
+    trm <- basic_dfs_out$terms[i]
+
+    #exclude interactions since we just want the main varaibles
+    len <- length(strsplit(trm, ":")[[1]])
+
+    if(trm != "(Intercept)" && trm != "Residuals" && len == 1){
+      basic_dfs_out$varclass[i] <- class(model$frame[ ,trm])
+    }
+  }
+
   # Define whether there are associated random slope terms
   random_terms <- basic_dfs_out[which(basic_dfs_out$vartype == "random"),]
   random_terms <- random_terms[which(random_terms$terms != "Residuals"),]
@@ -121,7 +134,7 @@ base_aov_dfs<-function(model){
     random_terms$covar[i] <- covar
   }
 
-  basic_dfs_out <- left_join(basic_dfs_out, random_terms, by=c("terms", "df", "vartype"))
+  basic_dfs_out <- left_join(basic_dfs_out, random_terms, by=c("terms", "df", "vartype", "varclass"))
 
   # Determine if we have a random int, slope, or int_and_slope
   basic_dfs_out$termtype <- as.character(NA)

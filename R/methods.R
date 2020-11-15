@@ -17,6 +17,9 @@ summary.bdf <- function (object){
     out <- inner_outer_summary(object)
     print(out)
 
+  } else if(c2 == "nlme") {
+    out <- nlme_summary(object)
+    print(out)
   }
 }
 
@@ -36,7 +39,7 @@ print.bdf <- function (object){
     stop(paste(object, "not an bdf object"))
   }
 
-  if(c2 == "inner_outer"){
+  if(c2 == "inner_outer" || c2 == "nlme"){
 
     out <- data.frame(object)
 
