@@ -108,12 +108,13 @@ base_aov_dfs<-function(model){
     }
   }
 
+
   # Identify the variable classes in the data frame
   basic_dfs_out$varclass <- as.character(NA)
   for(i in 1:nrow(basic_dfs_out)) {
     trm <- basic_dfs_out$terms[i]
 
-    #exclude interactions since we just want the main varaibles
+    #exclude interactions since we just want the main variables
     len <- length(strsplit(trm, ":")[[1]])
 
     if(trm != "(Intercept)" && trm != "Residuals" && len == 1){
@@ -152,19 +153,6 @@ base_aov_dfs<-function(model){
       } else {
         basic_dfs_out$termtype[i] <- "int_and_slope"
       }
-    }
-  }
-
-  # Identify the variable classes in the data frame
-  basic_dfs_out$varclass <- as.character(NA)
-  for(i in 1:nrow(basic_dfs_out)) {
-    trm <- basic_dfs_out$terms[i]
-
-    #exclude interactions since we just want the main varaibles
-    len <- length(strsplit(trm, ":")[[1]])
-
-    if(trm != "(Intercept)" && trm != "Residuals" && len == 1){
-      basic_dfs_out$varclass[i] <- class(model$frame[ ,trm])
     }
   }
 
