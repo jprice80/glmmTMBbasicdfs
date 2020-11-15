@@ -57,7 +57,7 @@ anova<-function(model, type = 3, ddf = "inner-outer", test.statistic="F", contr_
     } else if (ddf == "containment") {
       aov_out <- containment_aov(model, type)
     } else {
-      stop ("Only inner-outter and containment methods are supported at this time")
+      stop ("Only nlme, inner-outter, and containment methods are supported at this time")
     }
   } else if(test.statistic == "Chisq") {
     aov_out <- suppressForeignCheck(glmmTMB:::Anova.glmmTMB(model, type = type))
