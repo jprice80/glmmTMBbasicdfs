@@ -81,7 +81,8 @@ model_properties <- function(model){
     len <- length(strsplit(trm, ":")[[1]])
 
     if(trm != "(Intercept)" && trm != "Residuals" && len == 1){
-      prop_out$varclass[i] <- class(model$frame[ ,trm])
+      cls <- class(model$frame[ ,trm])[length(class(model$frame[ ,trm]))]
+      prop_out$varclass[i] <- cls
     }
   }
 
@@ -97,11 +98,13 @@ model_properties <- function(model){
       containsneg1 <- grepl("- 1", slope_term, fixed = TRUE)
       containspls0 <- grepl("+ 0", slope_term, fixed = TRUE)
 
+      eval_slope <- as.character(NA)
       if(containsneg1 == TRUE) {
         eval_slope <- trimws(strsplit(as.character(slope_term), "\\- ")[[1]][1])
       } else if(containspls0 == TRUE) {
         eval_slope <- trimws(strsplit(as.character(slope_term), "\\+ ")[[1]][1])
       } else {
+        eval_slope <- as.character(slope_term)
         rslope_int <- TRUE
       }
 
@@ -114,7 +117,7 @@ model_properties <- function(model){
     }
 
 
-    if(!is.na(slope_term) == TRUE) {
+    if(is.na(slope_term) == FALSE) {
       if(slope_term == "1" || slope_class == "factor") {
         prop_out$termtype[i] <- "int"
       } else if (containsneg1 == TRUE || containspls0 == TRUE) {
