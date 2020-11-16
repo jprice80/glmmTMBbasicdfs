@@ -93,6 +93,20 @@ base_aov_dfs<-function(model){
   resids<-data.frame(terms="Residuals", df=resids)
   basic_dfs_out<-rbind(basic_dfs_out, resids)
 
+  # Define fixed and random terms
+  basic_dfs_out$vartype <- as.character(NA)
+  for(i in 1:nrow(basic_dfs_out)) {
+    trm<-basic_dfs_out$terms[i]
+
+    if(trm %in% fixed) {
+      basic_dfs_out$vartype[i]<-"fixed"
+    } else if(trm =="(Intercept)") {
+      basic_dfs_out$vartype[i]<-"fixed"
+    } else {
+      basic_dfs_out$vartype[i]<-"random"
+    }
+  }
+
   return(basic_dfs_out)
 }
 
