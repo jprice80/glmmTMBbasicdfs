@@ -19,9 +19,12 @@ anova(
 to the corresponding Arabic numerals.}
 
 \item{ddf}{the method for computing the denominator degrees of freedom and F-statistics.
-ddf = \code{inner-outer} primarily corresponds to classic \code{\link{nlme}}
-denominator degrees of freedom calculations. \code{containment} corresponds to the SAS
-default degrees of freedom calculations for generalized linear mixed models.}
+ddf = \code{\link{nlme}} corresponds to inner-outer denominator degrees of freedom
+rules used by \code{\link{nlme}}. ddf = \code{inner-outer} primarily corresponds
+to classic \code{\link{nlme}} denominator degrees of freedom calculations but
+makes additional corrections for random slope models. \code{containment} corresponds
+to the SAS default degrees of freedom calculations for generalized linear mixed models.
+Default is \code{inner-outer}.}
 
 \item{test.statistic}{designates whether the \code{F} or \code{Chisq} distribution
 is used to compute the ANOVA tables.}
@@ -35,7 +38,7 @@ a \code{data.frame}
 \description{
 The \code{anova} function will perform an analysis of variance on glmmTMB
     objects using the F distribution. Denominator degrees of freedom calculations are
-    performed using either the \code{\link{nlme}} \code{inner-outer} or \code{containment}
+    performed using either the \code{\link{nlme}}, \code{inner-outer}, or \code{containment}
     methods.
 }
 \details{
