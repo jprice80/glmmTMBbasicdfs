@@ -194,3 +194,51 @@ best_rules <- function(model){
   return(rules_out)
 }
 
+
+#====================================== Exclusive Terms ===================================================
+
+
+#' Identify Exclusive terms used to identify levels of random slope and intercept variables
+#'
+#' @param model
+#' @param term
+#'
+#' @return a \code{\link{data.frame}}
+#' @keywords internal
+exclusive_terms<-function(model, term){
+  y_name<- names(model$modelInfo$respCol)
+  br <- best_rules(model)
+  temp <- suppressMessages(br %>% filter(slopeterm ==  term, rules == "int_and_slope")) %>% arrange(interceptterm)
+
+  temp$length <- NA
+  for(i in 1:nrow(temp)){
+    temp$length[i] <- length(strsplit(temp$interceptterm[i], ":")[[1]])
+  }
+
+  temp <- temp %>% arrange(length)
+
+  if(nrow(br) > 1){
+    exclusive_terms <- c()
+    for(j in 2:nrow(temp)){
+      trm1 <- temp$interceptterm[j-1]
+      trm2 <- temp$interceptterm[j]
+
+      out <- strsplit(as.character(trm2), "\\:")[[1]] %in% strsplit(as.character(trm1), "\\:")[[1]]
+
+      individual_terms <- strsplit(as.character(trm2), "\\:")[[1]]
+      individual_terms <- individual_terms[out==FALSE]
+
+      if(length(individual_terms) > 1){
+        individual_terms <- paste0(individual_terms,":")
+      }
+
+      exclusive_terms[length(exclusive_terms)+1] <- individual_terms
+    }
+  }
+
+  temp$exclusive_terms <- c(as.character(NA), exclusive_terms)
+
+  return(temp)
+}
+
+
