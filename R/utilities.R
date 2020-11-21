@@ -208,7 +208,7 @@ best_rules <- function(model){
 exclusive_terms<-function(model, term){
   y_name<- names(model$modelInfo$respCol)
   br <- best_rules(model)
-  temp <- suppressMessages(br %>% filter(slopeterm ==  term, rules == "int_and_slope")) %>% arrange(interceptterm)
+  temp <- suppressMessages(br %>% filter(slopeterm ==  !!sym(term), rules == "slope")) %>% arrange(interceptterm)
 
   temp$length <- NA
   for(i in 1:nrow(temp)){
