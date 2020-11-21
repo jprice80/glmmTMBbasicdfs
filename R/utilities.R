@@ -81,8 +81,11 @@ model_properties <- function(model){
     len <- length(strsplit(trm, ":")[[1]])
 
     if(trm != "(Intercept)" && trm != "Residuals" && len == 1){
-      cls <- class(model$frame[ ,trm])[length(class(model$frame[ ,trm]))]
+      cls <- class(model$frame[ ,trm])
+      cls <- cls[length(class(model$frame[ ,trm]))]
       prop_out$varclass[i] <- cls
+    } else {
+      prop_out$varclass[i] <- as.character(NA)
     }
   }
 

@@ -114,9 +114,11 @@ inner_outer_aov <- function(model = model, type = type){
     if("(Intercept)" %in% allterms){
       allterms <- allterms[2:length(allterms)]
       fixedform <- paste(y_name, "~", paste(allterms, collapse="+"))
+      inter <- TRUE
     } else {
       allterms <- allterms[2:length(allterms)]
       fixedform <- paste(y_name, "~ -1 +", paste(allterms, collapse="+"))
+      inter <- FALSE
     }
 
     dfvec <- c()
@@ -142,7 +144,7 @@ inner_outer_aov <- function(model = model, type = type){
         # Drop the associated random intercept term since we are only performing a random slope model
         # Remove this for random slope and intercept models
         temp_term <- strsplit(current_random_terms[length(current_random_terms)], "\\:")[[1]]
-        if(all(temp_term %in% intercept_terms)){
+        if(all(temp_term %in% intercept_terms) && length(intercept_terms) > 1){
           current_random_terms <- current_random_terms[-length(current_random_terms)]
         }
 
@@ -150,6 +152,12 @@ inner_outer_aov <- function(model = model, type = type){
         slopeterm <- paste(slope_trm, trms$interceptterm[j], sep = ":")
         slopeform <- as.formula(paste(fixedform, randomform, slopeterm, sep="+"))
         slope_vec <- strsplit(slopeterm, "\\:")[[1]]
+
+        if(inter == TRUE){
+          attr(slopeform, "Intercept") <- TRUE
+        } else {
+          attr(slopeform, "Intercept") <- FALSE
+        }
 
         slope_aov_dfs <- data_aov_dfs(formula = slopeform, data = model$frame)
 
@@ -172,7 +180,7 @@ inner_outer_aov <- function(model = model, type = type){
   }
 
 
-  #=================================================== Random Slope and Intercept Part ============================================================
+  #=================================================== Random Intercept and Slope Part ============================================================
 
 
   if(("int_and_slope" %in% rules$rules) == TRUE){
@@ -185,9 +193,11 @@ inner_outer_aov <- function(model = model, type = type){
     if("(Intercept)" %in% allterms){
       allterms <- allterms[2:length(allterms)]
       fixedform <- paste(y_name, "~", paste(allterms, collapse="+"))
+      inter <- TRUE
     } else {
       allterms <- allterms[2:length(allterms)]
       fixedform <- paste(y_name, "~ -1 +", paste(allterms, collapse="+"))
+      inter <- FALSE
     }
 
     dfvec <- c()
@@ -214,6 +224,12 @@ inner_outer_aov <- function(model = model, type = type){
         slopeterm <- paste(slope_trm, trms$interceptterm[j], sep = ":")
         slopeform <- as.formula(paste(fixedform, randomform, slopeterm, sep="+"))
         slope_vec <- strsplit(slopeterm, "\\:")[[1]]
+
+        if(inter == TRUE){
+          attr(slopeform, "Intercept") <- TRUE
+        } else {
+          attr(slopeform, "Intercept") <- FALSE
+        }
 
         slope_aov_dfs <- data_aov_dfs(formula = slopeform, data = model$frame)
 

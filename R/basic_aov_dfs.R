@@ -124,6 +124,8 @@ base_aov_dfs<-function(model){
 #' @keywords internal
 data_aov_dfs<-function(formula, data){
 
+  N <- nrow(data)
+
   # Model Matrix
   form <- formula
 
@@ -131,17 +133,20 @@ data_aov_dfs<-function(formula, data){
   fullterms <- unique(attr(terms(form), "term.labels"))
 
   # Define model matrix
-  mf1 <- model.frame(formula = form, data=model$frame)
+  mf1 <- model.frame(formula = form, data = data)
   mm1 <- model.matrix(form,mf1)
 
+
+  intercept <- attr(formula, "Intercept")
+
   # Establish output dataframe and count the number of terms
-  if(intercept==1){
+  if(intercept == TRUE){
     basic_dfs_out<-data.frame(terms=c("(Intercept)", fullterms))
   } else {
     basic_dfs_out<-data.frame(terms=fullterms)
   }
 
-  basic_dfs_out$basic_dfs_effectnum<-seq(from = 0, to = (nrow(basic_dfs_out)-1))
+  basic_dfs_out$basic_dfs_effectnum<-seq(from = 0, to = (nrow(basic_dfs_out) - 1))
 
   # QR decomposition information
   my_qr <- qr(mm1)
