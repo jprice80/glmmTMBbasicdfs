@@ -210,13 +210,6 @@ inner_outer_aov <- function(model = model, type = type){
           }
         }
 
-        # Drop the associated random intercept term since we are only performing a random slope model
-        # Remove this for random slope and intercept models
-        temp_term <- strsplit(current_random_terms[length(current_random_terms)], "\\:")[[1]]
-        if(all(temp_term %in% intercept_terms)){
-          current_random_terms <- current_random_terms[-length(current_random_terms)]
-        }
-
         randomform <- paste(current_random_terms, collapse = "+")
         slopeterm <- paste(slope_trm, trms$interceptterm[j], sep = ":")
         slopeform <- as.formula(paste(fixedform, randomform, slopeterm, sep="+"))
