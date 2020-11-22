@@ -140,7 +140,7 @@ data_aov_dfs<-function(formula, data){
   intercept <- attr(formula, "Intercept")
 
   # Establish output dataframe and count the number of terms
-  if(intercept == TRUE){
+  if(isTRUE(intercept)){
     basic_dfs_out<-data.frame(terms=c("(Intercept)", fullterms))
   } else {
     basic_dfs_out<-data.frame(terms=fullterms)
