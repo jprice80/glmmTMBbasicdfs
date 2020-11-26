@@ -116,8 +116,8 @@ inner_outer_aov <- function(model = model, type = type){
     if(any(is.na(df_output2$df)) == TRUE) {
       na_terms <- df_output2[is.na(df_output2$df), "terms"]
 
-      rules$both<-paste(rules$slopeterm, rules$interceptterm, sep = ":")
-      manual_terms <- rules %>% select(slopeterm, interceptterm, rules) %>% filter(both == na_terms)
+      rules$both <- paste(rules$slopeterm, rules$interceptterm, sep = ":")
+      manual_terms <- rules %>% select(slopeterm, interceptterm, rules, both) %>% filter(both == na_terms)
 
       df_vec = c()
       for(i in 1:nrow(manual_terms)){
