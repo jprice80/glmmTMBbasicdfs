@@ -5,7 +5,7 @@
 #'     to the corresponding Arabic numerals.
 #'
 #' @return a \code{data.frame}
-inner_outer_aov <- function(model = model, type = type){
+inner_outer_aov2 <- function(model = model, type = type){
   y_name<- names(model$modelInfo$respCol)
   dc <- dataClasses(model)
   TMBaov <- suppressPackageStartupMessages(car::Anova(model, type=type))
@@ -99,228 +99,76 @@ inner_outer_aov <- function(model = model, type = type){
   }
 
 
+  #=================================================== Random Slope/Int and Slope Part ============================================================
 
 
-  #=================================================== Random Slope Part ============================================================
+  if(("slope" %in% rules$rules) || ("int_and_slope" %in% rules$rules)){
+    form <- aov_formula_writer(model)
+    df_output1 <- data_aov_dfs(form, data = model$frame)
 
+    fullterms <- c(unique(attr(terms(form), "term.labels")), "Residuals")
+    fullterms <- data.frame(terms = fullterms)
 
-  if(("slope" %in% rules$rules) == TRUE){
-    slope_terms <- unique(fixed$slopeterm)
-    slope_terms <- slope_terms[!slope_terms=="1"]
-    num_unique_slope_terms <- length(slope_terms)
+    df_output2 <- left_join(fullterms, df_output1, by="terms")
 
-    allterms <- unique(fixed$terms)
+    # What to do with NA returned by aov?
+    # Manually compute dfs?
+    if(any(is.na(df_output2$df)) == TRUE) {
+      na_terms <- df_output2[is.na(df_output2$df), "terms"]
 
-    if("(Intercept)" %in% allterms){
-      allterms <- allterms[2:length(allterms)]
-      fixedform <- paste(y_name, "~", paste(allterms, collapse="+"))
-      inter <- TRUE
-    } else {
-      allterms <- allterms[2:length(allterms)]
-      fixedform <- paste(y_name, "~ -1 +", paste(allterms, collapse="+"))
-      inter <- FALSE
-    }
+      rules$both<-paste(rules$slopeterm, rules$interceptterm, sep = ":")
+      manual_terms <- rules %>% select(slopeterm, interceptterm, rules) %>% filter(both == na_terms)
 
-    for(i in 1:num_unique_slope_terms) {
-      slope_trm <- slope_terms[i]
-      trms <- fixed[which(fixed$slopeterm == slope_trm),]
+      df_vec = c()
+      for(i in 1:nrow(manual_terms)){
+        lhs <- manual_terms$slopeterm[i]
+        rhs <- manual_terms$interceptterm[i]
+        rule <- manual_terms$rules[i]
 
-      # Try each possible intercept term specified for each slope level
-      dfvec <- c()
-      for(j in 1:nrow(trms)) {
-
-        # Check to see if individual random terms exist in the current random intercept interaction term
-        intercept_terms <- strsplit(as.character(trms$interceptterm[j]), "\\:")[[1]]
-        current_random_terms <- c()
-        for(k in 1:length(random$terms)) {
-          test_terms <- strsplit(as.character(random$terms[k]), "\\:")[[1]]
-          in_it <- all(test_terms %in% intercept_terms)
-
-          if(in_it == TRUE){
-            current_random_terms[length(current_random_terms) + 1] <- random$terms[k]
-          }
-        }
-
-        # Drop the associated random intercept term since we are only performing a random slope model
-        # Remove this for random slope and intercept models
-        temp_term <- strsplit(current_random_terms[length(current_random_terms)], "\\:")[[1]]
-        if(all(temp_term %in% intercept_terms)) {
-          current_random_terms <- current_random_terms[-length(current_random_terms)]
-        }
-
-        if(identical(current_random_terms, character(0)) == TRUE){
-          slopeterm <- paste(slope_trm, trms$interceptterm[j], sep = ":")
-          slopeform <- as.formula(paste(fixedform, slopeterm, sep="+"))
-          slope_vec <- strsplit(slopeterm, "\\:")[[1]]
-
-        } else {
-          randomform <- paste(current_random_terms, collapse = "+")
-          slopeterm <- paste(slope_trm, trms$interceptterm[j], sep = ":")
-          slopeform <- as.formula(paste(fixedform, randomform, slopeterm, sep="+"))
-          slope_vec <- strsplit(slopeterm, "\\:")[[1]]
-        }
-
-        if(inter == TRUE){
-          attr(slopeform, "Intercept") <- TRUE
-        } else {
-          attr(slopeform, "Intercept") <- FALSE
-        }
-
-        slope_aov_dfs <- data_aov_dfs(formula = slopeform, data = model$frame)
-
-        # Find the appropriate DFs
-        for(k in 1:nrow(slope_aov_dfs)) {
-          temp_term <- slope_aov_dfs$terms[k]
-          temp_vec <- strsplit(temp_term, "\\:")[[1]]
-
-          if(all(slope_vec %in% temp_vec)== TRUE) {
-            dfs <- slope_aov_dfs$df[k]
-            dfvec[length(dfvec) + 1] <- dfs
-            break;
-          }
+        if(rule == "int_and_slope") {
+          df_vec[length(df_vec) + 1] <- individual_rint_rslope(lhs, rhs, data = model$frame)
+        } else if (rule == "slope") {
+          df_vec[length(df_vec) + 1] <- individual_rslope(lhs, rhs, data = model$frame)
         }
       }
 
+      # Insert the minimum df value into the appropriate space
+      df_output2[which(df_output2$terms == na_terms), "df"] <- min(df_vec, na.rm = TRUE)
 
-
-
-
-
-      # New part: Do final check against all term levels
-      test_trms <- strsplit(as.character(trms$interceptterm), "\\:")
-      if(nrow(trms) > 1 && length(test_trms) == nrow(trms)) {
-        extraform <- paste(paste(trms$slopeterm, trms$interceptterm, sep=":"), collapse="+")
-        #randomformform <- paste(paste(trms$interceptterm, sep=":"), collapse="+") # drop for rslope
-        slopeform <- as.formula(paste(fixedform, extraform, sep="+"))
-
-        if(inter == TRUE){
-          attr(slopeform, "Intercept") <- TRUE
-        } else {
-          attr(slopeform, "Intercept") <- FALSE
-        }
-
-        slope_aov_dfs <- data_aov_dfs(formula = slopeform, data = model$frame)
-
-        # Find the appropriate DFs
-        for(k in 1:nrow(slope_aov_dfs)) {
-          temp_term <- slope_aov_dfs$terms[k]
-          temp_vec <- strsplit(temp_term, "\\:")[[1]]
-
-          if(all(slope_vec %in% temp_vec)== TRUE) {
-            dfs <- slope_aov_dfs$df[k]
-            dfvec[length(dfvec) + 1] <- dfs
-            break;
-          }
-        }
-      }
-
-      df <- min(dfvec, na.rm = TRUE)
-      df_output[which(df_output$terms == slope_trm), "denDf"] <- df
     }
   }
 
+  #Next find the correct DF for each fixed effect term
 
-  #=================================================== Random Intercept and Slope Part ============================================================
+  int<-df_output
+  slope<-df_output2
 
+  rules_ready <- data.frame(terms = row.names(TMBaov))
+  rules2 <- rules %>% select(terms, rules) %>% distinct()
+  rules2 <- left_join(rules_ready, rules2, by="terms")
 
-  if(("int_and_slope" %in% rules$rules) == TRUE){
-    slope_terms <- unique(fixed$slopeterm)
-    slope_terms <- slope_terms[!slope_terms=="1"]
-    num_unique_slope_terms <- length(slope_terms)
+  if(is.na(rules2$rules[1])){
+    rules2$rules[1] <-"int"
+  }
 
-    allterms <- unique(fixed$terms)
+  for(i in 1:nrow(rules)){
+    rule <- rules2$rules[i]
+    term <- rules2$terms[i]
 
-    if("(Intercept)" %in% allterms){
-      allterms <- allterms[2:length(allterms)]
-      fixedform <- paste(y_name, "~", paste(allterms, collapse="+"))
-      inter <- TRUE
-    } else {
-      allterms <- allterms[2:length(allterms)]
-      fixedform <- paste(y_name, "~ -1 +", paste(allterms, collapse="+"))
-      inter <- FALSE
-    }
-
-    for(i in 1:num_unique_slope_terms) {
-      slope_trm <- slope_terms[i]
-      trms <- fixed[which(fixed$slopeterm == slope_trm),]
-
-      # Try each possible intercept term specified for each slope level
-      dfvec <- c()
-      for(j in 1:nrow(trms)) {
-
-        # Check to see if individual random terms exist in the current random intercept interaction term
-        intercept_terms <- strsplit(as.character(trms$interceptterm[j]), "\\:")[[1]]
-        current_random_terms <- c()
-        for(k in 1:length(random$terms)) {
-          test_terms <- strsplit(as.character(random$terms[k]), "\\:")[[1]]
-          in_it <- all(test_terms %in% intercept_terms)
-
-          if(in_it == TRUE){
-            current_random_terms[length(current_random_terms) + 1] <- random$terms[k]
-          }
-        }
-
-        randomform <- paste(current_random_terms, collapse = "+")
-        slopeterm <- paste(slope_trm, trms$interceptterm[j], sep = ":")
-        slopeform <- as.formula(paste(fixedform, randomform, slopeterm, sep="+"))
-        slope_vec <- strsplit(slopeterm, "\\:")[[1]]
-
-        if(inter == TRUE){
-          attr(slopeform, "Intercept") <- TRUE
-        } else {
-          attr(slopeform, "Intercept") <- FALSE
-        }
-
-        slope_aov_dfs <- data_aov_dfs(formula = slopeform, data = model$frame)
-
-        # Find the appropriate DFs
-        for(k in 1:nrow(slope_aov_dfs)) {
-          temp_term <- slope_aov_dfs$terms[k]
-          temp_vec <- strsplit(temp_term, "\\:")[[1]]
-
-          if(all(slope_vec %in% temp_vec)== TRUE) {
-            dfs <- slope_aov_dfs$df[k]
-            dfvec[length(dfvec) + 1] <- dfs
-            break;
+    if(rule != "int"){
+      random_vec <- c()
+      for(j in 1:nrow(df_output2)){
+        interact <- grepl("\\:", df_output2$terms[j])
+        if(interact == TRUE){
+          inter_vec <- strsplit(df_output2$terms[j], ":")[[1]]
+          if(term %in% inter_vec){
+            random_vec[length(random_vec) + 1] <- df_output2$df[j]
           }
         }
       }
 
-
-
-
-
-
-      # New part: Do final check against all term levels
-      test_trms <- strsplit(as.character(trms$interceptterm), "\\:")
-      if(nrow(trms) > 1 && length(test_trms) == nrow(trms)) {
-        extraform <- paste(paste(trms$slopeterm, trms$interceptterm, sep=":"), collapse="+")
-        randomformform <- paste(paste(trms$interceptterm, sep=":"), collapse="+") # drop for rslope
-        slopeform <- as.formula(paste(fixedform, randomform, extraform, sep="+"))
-
-        if(inter == TRUE){
-          attr(slopeform, "Intercept") <- TRUE
-        } else {
-          attr(slopeform, "Intercept") <- FALSE
-        }
-
-        slope_aov_dfs <- data_aov_dfs(formula = slopeform, data = model$frame)
-
-        # Find the appropriate DFs
-        for(k in 1:nrow(slope_aov_dfs)) {
-          temp_term <- slope_aov_dfs$terms[k]
-          temp_vec <- strsplit(temp_term, "\\:")[[1]]
-
-          if(all(slope_vec %in% temp_vec)== TRUE) {
-            dfs <- slope_aov_dfs$df[k]
-            dfvec[length(dfvec) + 1] <- dfs
-            break;
-          }
-        }
-      }
-
-      df <- min(dfvec, na.rm = TRUE)
-      df_output[which(df_output$terms == slope_trm), "denDf"] <- df
+      df <- min(random_vec, na.rm = TRUE)
+      df_output$denDf[i] <- df
     }
   }
 

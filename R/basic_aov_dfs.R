@@ -17,14 +17,11 @@ base_aov_dfs<-function(model){
   intercept<-attr(model$modelInfo$terms$cond$fixed, "intercept")
 
   # Define term numbers
-  #vecterms <- c(fixed,random)
-  #newform <- as.formula(paste(y_name,"~ ",paste(vecterms, collapse="+")))
   fullterms <- unique(attr(terms(form), "term.labels"))
 
-
   # Define model matrix
-  mf1 <- model.frame(formula = form, data=model$frame)
-  mm1 <- model.matrix(form,mf1)
+  mf1 <- model.frame(formula = form, data = model$frame)
+  mm1 <- model.matrix(form, mf1)
 
 
   # Establish output dataframe and count the number of terms
@@ -35,6 +32,7 @@ base_aov_dfs<-function(model){
   }
 
   basic_dfs_out$basic_dfs_effectnum<-seq(from = 0, to = (nrow(basic_dfs_out)-1))
+  basic_dfs_out$df<-NA
 
   # QR decomposition information
   my_qr <- qr(mm1)
@@ -47,51 +45,37 @@ base_aov_dfs<-function(model){
 
   # Extract column terms corresponding to appropriate pivots to generate dfs
   valid_matrix_columns_index <- full_matrix_columns_index[pivot[1L:rank]]
-  unique_index <- unique(valid_matrix_columns_index)
-  nterms <- length(unique_index)
-
-  if(nrow(basic_dfs_out) != nterms){
-    warning("Model is overparameterized resulting. Computation continues in spite of this warning.
-            Please consider respecifying the model. Interpret this model with extreme caution.")
-  }
-
-  # Drop any terms from ANOVA table not existing in pivots
-  basic_dfs_out <- basic_dfs_out[match(unique_index, basic_dfs_out$basic_dfs_effectnum),]
-  basic_dfs_out$basic_dfs_effectnum <- NULL
-
-
-  # effects calc
-  # Q <- qr.Q(my_qr)
-  # effects <- t(Q) %*% model$frame[,1]
-  # valid_effect_names <- full_matrix_names[pivot[1L:rank]]
-  #
-  # if (!is.null(effects)){
-  #   effects <- as.matrix(effects)[seq_along(asgn), , drop = FALSE]
-  #   effects <- data.frame(valid_effect_names, groups=full_matrix_columns_index[pivot[1L:rank]], effects)
-  # }
 
   # calculate the appropriate basic aov degrees of freedom
-  df<-c()
-  for (i in seq(nterms)) {
+  for (i in 1:nrow(basic_dfs_out)) {
+
+    effnum <- basic_dfs_out$basic_dfs_effectnum[i]
+    effname <- basic_dfs_out$terms[i]
 
     #identify the parameter estimates (effects) that this iteration corresponds to
-    ai <- (valid_matrix_columns_index == unique_index[i])
+    ai <- (valid_matrix_columns_index == effnum)
 
     # Sum the total number of effects for each term
-    df <- c(df, sum(ai))
+    df <- sum(ai)
+
+    if(!is.na(df) && df != 0){
+      basic_dfs_out[which(basic_dfs_out$terms == effname),"df"] <- df
+    } else {
+      basic_dfs_out[which(basic_dfs_out$terms == effname),"df"] <- NA
+    }
   }
 
-  basic_dfs_out<-cbind(basic_dfs_out, df)
+  basic_dfs_out$basic_dfs_effectnum <- NULL
 
-  # Calculate the residual dfs
-  if(intercept==1){
-    resids <- N - sum(df, na.rm = TRUE)
-  } else {
-    resids <- N - sum(df[-1], na.rm = TRUE)
+  resid_val <- N - sum(basic_dfs_out$df, na.rm = TRUE)
+
+  resids <- data.frame(terms="Residuals", df=resid_val)
+  basic_dfs_out <- rbind(basic_dfs_out, resids)
+
+  if(any(is.na(basic_aov_dfs$df))){
+    warning("Model may be overparameterized. Computation continues in spite of this warning.
+            Interpret this model with extreme caution.")
   }
-
-  resids<-data.frame(terms="Residuals", df=resids)
-  basic_dfs_out<-rbind(basic_dfs_out, resids)
 
   # Define fixed and random terms
   basic_dfs_out$vartype <- as.character(NA)
@@ -111,6 +95,7 @@ base_aov_dfs<-function(model){
 }
 
 
+#====================================== Formula and Data basic dfs ===================================================
 
 
 #' Performs basic ANOVA degrees of freedom calculations for input into downstream
@@ -122,7 +107,7 @@ base_aov_dfs<-function(model){
 #'
 #' @return a \code{\link{data.frame}}
 #' @keywords internal
-data_aov_dfs<-function(formula, data){
+data_aov_dfs <- function(formula, data){
 
   N <- nrow(data)
 
@@ -134,19 +119,19 @@ data_aov_dfs<-function(formula, data){
 
   # Define model matrix
   mf1 <- model.frame(formula = form, data = data)
-  mm1 <- model.matrix(form,mf1)
-
+  mm1 <- model.matrix(form, mf1)
 
   intercept <- attr(formula, "Intercept")
 
   # Establish output dataframe and count the number of terms
-  if(isTRUE(intercept)){
+  if(all(mm1[,1] == 1)){
     basic_dfs_out<-data.frame(terms=c("(Intercept)", fullterms))
   } else {
     basic_dfs_out<-data.frame(terms=fullterms)
   }
 
-  basic_dfs_out$basic_dfs_effectnum<-seq(from = 0, to = (nrow(basic_dfs_out) - 1))
+  basic_dfs_out$basic_dfs_effectnum<-seq(from = 0, to = (nrow(basic_dfs_out)-1))
+  basic_dfs_out$df<-NA
 
   # QR decomposition information
   my_qr <- qr(mm1)
@@ -159,41 +144,165 @@ data_aov_dfs<-function(formula, data){
 
   # Extract column terms corresponding to appropriate pivots to generate dfs
   valid_matrix_columns_index <- full_matrix_columns_index[pivot[1L:rank]]
-  unique_index <- unique(valid_matrix_columns_index)
-  nterms <- length(unique_index)
-
-  if(nrow(basic_dfs_out) != nterms){
-    warning("Model is overparameterized resulting. Computation continues in spite of this warning.
-            Please consider respecifying the model. Interpret this model with extreme caution.")
-  }
-
-  # Drop any terms from ANOVA table not existing in pivots
-  basic_dfs_out <- basic_dfs_out[match(unique_index, basic_dfs_out$basic_dfs_effectnum),]
-  basic_dfs_out$basic_dfs_effectnum <- NULL
 
   # calculate the appropriate basic aov degrees of freedom
-  df<-c()
-  for (i in seq(nterms)) {
+  for (i in 1:nrow(basic_dfs_out)) {
+
+    effnum <- basic_dfs_out$basic_dfs_effectnum[i]
+    effname <- basic_dfs_out$terms[i]
 
     #identify the parameter estimates (effects) that this iteration corresponds to
-    ai <- (valid_matrix_columns_index == unique_index[i])
+    ai <- (valid_matrix_columns_index == effnum)
 
     # Sum the total number of effects for each term
-    df <- c(df, sum(ai))
+    df <- sum(ai)
+
+    if(!is.na(df) && df != 0){
+      basic_dfs_out[which(basic_dfs_out$terms == effname),"df"] <- df
+    } else {
+      basic_dfs_out[which(basic_dfs_out$terms == effname),"df"] <- NA
+    }
   }
 
-  basic_dfs_out<-cbind(basic_dfs_out, df)
+  basic_dfs_out$basic_dfs_effectnum <- NULL
 
-  # Calculate the residual dfs
-  if(intercept==1){
-    resids <- N - sum(df, na.rm = TRUE)
-  } else {
-    resids <- N - sum(df[-1], na.rm = TRUE)
+  resid_val <- N - sum(basic_dfs_out$df, na.rm = TRUE)
+
+  resids <- data.frame(terms="Residuals", df=resid_val)
+  basic_dfs_out <- rbind(basic_dfs_out, resids)
+
+  if(any(is.na(basic_aov_dfs$df))){
+    warning("Model may be overparameterized. Computation continues in spite of this warning.
+            Interpret this model with extreme caution.")
   }
-
-  resids<-data.frame(terms="Residuals", df=resids)
-  basic_dfs_out<-rbind(basic_dfs_out, resids)
 
   return(basic_dfs_out)
 }
 
+
+#====================================== single random slope ===================================================
+
+individual_rslope <- function(lhs, rhs, data) {
+
+  form <- paste("~", paste(rhs, paste(lhs, rhs, sep = ":"), sep = "+"))
+  form <- as.formula(form)
+
+  # Define term numbers
+  fullterms <- unique(attr(terms(form), "term.labels"))
+
+  mf1 <- model.frame(formula = form, data = data)
+  mm1 <- model.matrix(form, mf1)
+
+  intercept <- attr(formula, "Intercept")
+
+  # Establish output dataframe and count the number of terms
+  if(all(mm1[,1] == 1)){
+    basic_dfs_out<-data.frame(terms=c("(Intercept)", fullterms))
+  } else {
+    basic_dfs_out<-data.frame(terms=fullterms)
+  }
+
+  basic_dfs_out$basic_dfs_effectnum<-seq(from = 0, to = (nrow(basic_dfs_out)-1))
+  basic_dfs_out$df<-NA
+
+  # QR decomposition information
+  my_qr <- qr(mm1)
+  pivot <- my_qr$pivot
+  rank <- my_qr$rank
+
+  # Identify the appropriate column indices and number of terms
+  full_matrix_columns_index <- attr(mm1, "assign")
+  full_matrix_names <- dimnames(mm1)[[2]]
+
+  # Extract column terms corresponding to appropriate pivots to generate dfs
+  valid_matrix_columns_index <- full_matrix_columns_index[pivot[1L:rank]]
+
+  # calculate the appropriate basic aov degrees of freedom
+  for (i in 1:nrow(basic_dfs_out)) {
+
+    effnum <- basic_dfs_out$basic_dfs_effectnum[i]
+    effname <- basic_dfs_out$terms[i]
+
+    #identify the parameter estimates (effects) that this iteration corresponds to
+    ai <- (valid_matrix_columns_index == effnum)
+
+    # Sum the total number of effects for each term
+    df <- sum(ai)
+
+    if(!is.na(df) && df != 0){
+      basic_dfs_out[which(basic_dfs_out$terms == effname),"df"] <- df
+    } else {
+      basic_dfs_out[which(basic_dfs_out$terms == effname),"df"] <- NA
+    }
+  }
+
+  basic_dfs_out$basic_dfs_effectnum <- NULL
+
+  df <- basic_dfs_out[nrow(basic_dfs_out), "df"]
+
+  return(df)
+}
+
+
+#====================================== single random intercept and slope ===================================================
+
+individual_rint_rslope <- function(lhs, rhs, data) {
+
+  form <- paste("~", paste(lhs, rhs, paste(lhs, rhs, sep = ":"), sep = "+"))
+  form <- as.formula(form)
+
+  # Define term numbers
+  fullterms <- unique(attr(terms(form), "term.labels"))
+
+  mf1 <- model.frame(formula = form, data = data)
+  mm1 <- model.matrix(form, mf1)
+
+  intercept <- attr(formula, "Intercept")
+
+  # Establish output dataframe and count the number of terms
+  if(all(mm1[,1] == 1)){
+    basic_dfs_out<-data.frame(terms=c("(Intercept)", fullterms))
+  } else {
+    basic_dfs_out<-data.frame(terms=fullterms)
+  }
+
+  basic_dfs_out$basic_dfs_effectnum<-seq(from = 0, to = (nrow(basic_dfs_out)-1))
+  basic_dfs_out$df<-NA
+
+  # QR decomposition information
+  my_qr <- qr(mm1)
+  pivot <- my_qr$pivot
+  rank <- my_qr$rank
+
+  # Identify the appropriate column indices and number of terms
+  full_matrix_columns_index <- attr(mm1, "assign")
+  full_matrix_names <- dimnames(mm1)[[2]]
+
+  # Extract column terms corresponding to appropriate pivots to generate dfs
+  valid_matrix_columns_index <- full_matrix_columns_index[pivot[1L:rank]]
+
+  # calculate the appropriate basic aov degrees of freedom
+  for (i in 1:nrow(basic_dfs_out)) {
+
+    effnum <- basic_dfs_out$basic_dfs_effectnum[i]
+    effname <- basic_dfs_out$terms[i]
+
+    #identify the parameter estimates (effects) that this iteration corresponds to
+    ai <- (valid_matrix_columns_index == effnum)
+
+    # Sum the total number of effects for each term
+    df <- sum(ai)
+
+    if(!is.na(df) && df != 0){
+      basic_dfs_out[which(basic_dfs_out$terms == effname),"df"] <- df
+    } else {
+      basic_dfs_out[which(basic_dfs_out$terms == effname),"df"] <- NA
+    }
+  }
+
+  basic_dfs_out$basic_dfs_effectnum <- NULL
+
+  df <- basic_dfs_out[nrow(basic_dfs_out), "df"]
+
+  return(df)
+}
