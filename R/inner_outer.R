@@ -5,7 +5,7 @@
 #'     to the corresponding Arabic numerals.
 #'
 #' @return a \code{data.frame}
-inner_outer_aov2 <- function(model = model, type = type){
+inner_outer_aov <- function(model = model, type = type){
   y_name<- names(model$modelInfo$respCol)
   dc <- dataClasses(model)
   TMBaov <- suppressPackageStartupMessages(car::Anova(model, type=type))
