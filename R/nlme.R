@@ -5,6 +5,7 @@
 #'     to the corresponding Arabic numerals.
 #'
 #' @return a \code{data.frame}
+#' @keywords internal
 nlme_aov <- function(model = model, type = type){
 
   dc <- dataClasses(model)

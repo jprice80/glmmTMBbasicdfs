@@ -1,12 +1,13 @@
-#' Inner-Outer ANOVA and Degrees of Freedom Calculations
+#' Containment degrees of freedom calculation
 #'
-#' @param model a \code{\link{glmmTMB}} model object
-#' @param type type of test, \code{II, III, 2, 3}. Roman numerals are equivalent
+#' @param a \code{\link{glmmTMB}} model object
+#' @param type type type of test, \code{II, III, 2, 3}. Roman numerals are equivalent
 #'     to the corresponding Arabic numerals.
 #'
 #' @return a \code{data.frame}
+#'
 #' @keywords internal
-inner_outer_aov <- function(model = model, type = type){
+containment_aov <- function(model = model, type = type){
   y_name<- names(model$modelInfo$respCol)
   dc <- dataClasses(model)
   TMBaov <- suppressPackageStartupMessages(car::Anova(model, type=type))
@@ -61,20 +62,17 @@ inner_outer_aov <- function(model = model, type = type){
 
           if(rtrm[1] != "Residuals"){
 
-            if(length(rtrm) == 1 && length(ftrm) == 1){
-              temp<-suppressMessages(model$frame %>% select(rtrm, ftrm) %>% group_by(!!sym(rtrm)) %>% summarise(count = n_distinct(!!sym(ftrm), na.rm = TRUE)))
-            } else if(length(ftrm) > 1) {
-              temp<-suppressMessages(model$frame %>% select(rtrm, ftrm) %>% group_by_at(rtrm) %>% summarise(count = n_distinct(ftrm, na.rm = TRUE)))
-            } else {
-              temp<-suppressMessages(model$frame %>% select(rtrm, ftrm) %>% group_by_at(rtrm) %>% summarise(count = n_distinct(!!sym(ftrm), na.rm = TRUE)))
-            }
+            if(all(datacls %in% "factor")==TRUE){
 
-            # Check to see if we have all 1s
-            # If we do, we know we have found the lowest level
+              # categorical variable containment
 
-            if(all(temp$count == 1)){
-              fixed$denDf[i] <- random$df[j]
-              break;
+              if(all(ftrm %in% rtrm)==TRUE){
+                fixed$denDf[i] <- random$df[j]
+                break;
+              } else {
+                fixed$denDf[i] <- random$df[nrow(random)]
+              }
+
             } else {
               fixed$denDf[i] <- random$df[nrow(random)]
             }
@@ -192,71 +190,4 @@ inner_outer_aov <- function(model = model, type = type){
   }
 
   return(aod)
-}
-
-
-#====================================== Summary ===================================================
-
-#' Inner-Outer Parameter Estimates Table Calculations
-#'
-#' @param model a \code{\link{glmmTMB}} model object
-#'
-#' @return a \code{data.frame}
-inner_outer_summary <- function(model = model) {
-
-  # Set up basic summary table information
-  basic_aov_dfs <- inner_outer_aov(model)
-  param_est <- as.data.frame(summary(model)$coef$cond)
-  param_names <- row.names(param_est)
-  est <- param_est$Estimate
-  se <- param_est$`Std. Error`
-  tval <- param_est$`z value`
-
-  newParmEst <- data.frame(Estimate=est, Std.Error=se, df=NA, t.value=tval, Probt=NA)
-  row.names(newParmEst) <- param_names
-
-  for(i in 1:nrow(basic_aov_dfs)) {
-    #query the anova table term
-    aovtrm <- strsplit(row.names(basic_aov_dfs)[i], ":")[[1]]
-    denDF <- basic_aov_dfs$denDF[i]
-
-    for(j in 1:nrow(newParmEst)) {
-
-      #query the summary table terms to compare to the anova term
-      param_names <- row.names(newParmEst)[j]
-      matchvec <- c()
-      param_names_vec <- strsplit(param_names, ":")[[1]]
-
-      if(length(param_names_vec) == length(aovtrm)) {
-
-        # split up interactions and get a vector
-        for(k in 1:length(param_names_vec)) {
-
-          # Check for the correctness of each term in the vector
-          amatch<-agrep(aovtrm[k], param_names_vec[k])
-
-          if(length(amatch) == 0) {
-            amatch <- 0
-          }
-
-          matchvec[length(matchvec)+1] <- amatch
-        }
-
-        if(all(matchvec == 1)) {
-          newParmEst$df[j] <- denDF
-          newParmEst$Probt[j] <- 2*pt(-abs(newParmEst$t.value[j]), df = denDF)
-        }
-      }
-    }
-  }
-
-  #Assign the Intercept to be tested against the residual dfs
-  if(row.names(newParmEst)[1] == "(Intercept)"){
-    denDF<-basic_aov_dfs[nrow(basic_aov_dfs), "df"]
-
-    newParmEst$df[1] <- denDF
-    newParmEst$Probt[1] <- 2*pt(-abs(newParmEst$t.value[1]), df = denDF)
-  }
-
-  return(newParmEst)
 }
