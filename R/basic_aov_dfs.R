@@ -1,3 +1,9 @@
+
+
+
+
+
+
 #' Performs basic ANOVA degrees of freedom calculations for input into downstream
 #' functions.
 #'
@@ -72,9 +78,9 @@ base_aov_dfs<-function(model){
   resids <- data.frame(terms="Residuals", df=resid_val)
   basic_dfs_out <- rbind(basic_dfs_out, resids)
 
-  if(any(is.na(basic_aov_dfs$df))){
-    warning("Unable to determine degrees of freedom for this model using the specified method.
-            Computation continues in spite of this warning. Interpret this model with extreme caution.")
+  if(any(is.na(basic_dfs_out$df))){
+    warning("Unable to determine fully determine degrees of freedom for this model using the specified method.
+            Computation continues in spite of this warning. Interpret this model with caution.")
   }
 
   # Define fixed and random terms
@@ -171,9 +177,9 @@ data_aov_dfs <- function(formula, data){
   resids <- data.frame(terms="Residuals", df=resid_val)
   basic_dfs_out <- rbind(basic_dfs_out, resids)
 
-  if(any(is.na(basic_aov_dfs$df))){
-    warning("Unable to determine degrees of freedom for this model using the specified method.
-            Computation continues in spite of this warning. Interpret this model with extreme caution.")
+  if(any(is.na(basic_dfs_out$df))){
+    warning("Unable to determine fully determine degrees of freedom for this model using the specified method.
+            Computation continues in spite of this warning. Interpret this model with caution.")
   }
 
   return(basic_dfs_out)
@@ -233,8 +239,8 @@ individual_rslope <- function(lhs, rhs, data) {
       basic_dfs_out[which(basic_dfs_out$terms == effname),"df"] <- df
     } else {
       basic_dfs_out[which(basic_dfs_out$terms == effname),"df"] <- 0
-      warning("Unable to determine degrees of freedom for this model using the specified method.
-            Computation continues in spite of this warning. Interpret this model with extreme caution.")
+      warning("Unable to determine fully determine degrees of freedom for this model using the specified method.
+            Computation continues in spite of this warning. Interpret this model with caution.")
     }
   }
 
@@ -299,8 +305,8 @@ individual_rint_rslope <- function(lhs, rhs, data) {
       basic_dfs_out[which(basic_dfs_out$terms == effname),"df"] <- df
     } else {
       basic_dfs_out[which(basic_dfs_out$terms == effname),"df"] <- 0
-      warning("Unable to determine degrees of freedom for this model using the specified method.
-            Computation continues in spite of this warning. Interpret this model with extreme caution.")
+      warning("Unable to determine fully determine degrees of freedom for this model using the specified method.
+            Computation continues in spite of this warning. Interpret this model with caution.")
     }
   }
 

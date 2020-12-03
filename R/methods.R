@@ -39,7 +39,7 @@ print.bdf <- function (object){
     stop(paste(object, "not an bdf object"))
   }
 
-  if(c2 == "inner_outer" || c2 == "nlme"){
+  if(c2 == "inner_outer" || c2 == "nlme" || c2 == "containment"){
 
     out <- data.frame(object)
 

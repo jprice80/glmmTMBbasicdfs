@@ -148,7 +148,7 @@ inner_outer_aov <- function(model = model, type = type){
     rules2$rules[1] <-"int"
   }
 
-  for(i in 1:nrow(rules)){
+  for(i in 1:nrow(rules2)){
     rule <- rules2$rules[i]
     term <- rules2$terms[i]
 
@@ -162,15 +162,32 @@ inner_outer_aov <- function(model = model, type = type){
           if(term %in% inter_vec){
             both <- rules %>% select(slopeterm, interceptterm) %>% filter(slopeterm == term)
 
-            if(both$interceptterm %in% inter_vec){
-              random_vec[length(random_vec) + 1] <- df_output2$df[j]
+            for(k in 1:nrow(both)){
+              both_vec <- strsplit(both$interceptterm[k], ":")[[1]]
+              if(all(both_vec %in% inter_vec)) {
+                random_vec[length(random_vec) + 1] <- df_output2$df[j]
+              }
             }
           }
         }
       }
 
       df <- min(random_vec, na.rm = TRUE)
-      df_output$denDf[i] <- df
+
+      # If random slope & slope_int terms were considered pick the minimum df
+      if(i > 1) {
+        term2 <- rules2$terms[i-1]
+        if(term2 == term){
+          df2 <- df_output$denDf[i-1]
+          if(df < df2){
+            df_output$denDf[i] <- df
+          }
+        } else {
+          df_output$denDf[i] <- df
+        }
+      } else {
+        df_output$denDf[i] <- df
+      }
     }
   }
 

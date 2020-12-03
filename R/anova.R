@@ -28,7 +28,7 @@
 #' @export
 #'
 #' @examples Insert examples here later
-anova <- function(model, type = 3, ddf = "inner-outer", test.statistic="F", contr_sum = TRUE){
+anova <- function(model, type = 3, ddf = "containment", test.statistic="F", contr_sum = TRUE){
 
   if (class(model) != "glmmTMB") {
     stop ("Only glmmTMB models are supported")

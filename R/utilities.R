@@ -117,8 +117,12 @@ model_properties <- function(model){
       } else {
         slope_class <- "factor"
       }
-    }
 
+      # Catch any slope effects that are not specified as fixed effects in prop_out
+      if(identical(slope_class, character(0))){
+        slope_class <- class(model$frame[ ,slope_term])
+      }
+    }
 
     if(is.na(slope_term) == FALSE) {
       if(slope_term == "1" || slope_class == "factor") {
