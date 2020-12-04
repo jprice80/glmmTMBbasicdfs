@@ -1,9 +1,3 @@
-
-
-
-
-
-
 #' Performs basic ANOVA degrees of freedom calculations for input into downstream
 #' functions.
 #'
@@ -178,8 +172,7 @@ data_aov_dfs <- function(formula, data){
   basic_dfs_out <- rbind(basic_dfs_out, resids)
 
   if(any(is.na(basic_dfs_out$df))){
-    warning("Unable to determine fully determine degrees of freedom for this model using the specified method.
-            Computation continues in spite of this warning. Interpret this model with caution.")
+    warning("Unable to determine fully determine degrees of freedom for this model using the specified method.")
   }
 
   return(basic_dfs_out)
@@ -239,8 +232,7 @@ individual_rslope <- function(lhs, rhs, data) {
       basic_dfs_out[which(basic_dfs_out$terms == effname),"df"] <- df
     } else {
       basic_dfs_out[which(basic_dfs_out$terms == effname),"df"] <- 0
-      warning("Unable to determine fully determine degrees of freedom for this model using the specified method.
-            Computation continues in spite of this warning. Interpret this model with caution.")
+      warning("Unable to determine fully determine degrees of freedom for this model using the specified method.")
     }
   }
 
@@ -305,8 +297,7 @@ individual_rint_rslope <- function(lhs, rhs, data) {
       basic_dfs_out[which(basic_dfs_out$terms == effname),"df"] <- df
     } else {
       basic_dfs_out[which(basic_dfs_out$terms == effname),"df"] <- 0
-      warning("Unable to determine fully determine degrees of freedom for this model using the specified method.
-            Computation continues in spite of this warning. Interpret this model with caution.")
+      warning("Unable to determine fully determine degrees of freedom for this model using the specified method.")
     }
   }
 

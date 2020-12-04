@@ -204,7 +204,7 @@ best_rules <- function(model){
 
 #====================================== Formula Writer ===================================================
 
-#' AOV formula writer for slope and slope/intercept models
+#' AOV slope and slope/intercept models equation developer
 #'
 #' @param model
 #'

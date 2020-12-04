@@ -208,3 +208,83 @@ containment_aov <- function(model = model, type = type){
 
   return(aod)
 }
+
+
+#====================================== Summary ===================================================
+
+
+#' Containment Parameter Estimates Table Calculations
+#'
+#' @param model
+#'
+#' @param model a \code{\link{glmmTMB}} model object
+#'
+#' @return a \code{data.frame}
+containment_summary <- function(model = model) {
+
+  # Set up basic summary table information
+  basic_aov_dfs <- containment_aov(model)
+  param_est <- as.data.frame(summary(model)$coef$cond)
+  param_names <- row.names(param_est)
+  est <- param_est$Estimate
+  se <- param_est$`Std. Error`
+  tval <- param_est$`z value`
+
+  newParmEst <- data.frame(Estimate=est, Std.Error=se, df=NA, t.value=tval, Probt=NA)
+  row.names(newParmEst) <- param_names
+
+  for(i in 1:nrow(basic_aov_dfs)) {
+    #query the anova table term
+    aovtrm <- strsplit(row.names(basic_aov_dfs)[i], ":")[[1]]
+    denDF <- basic_aov_dfs$df[i]
+
+    for(j in 1:nrow(newParmEst)) {
+
+      #query the summary table terms to compare to the anova term
+      param_names <- row.names(newParmEst)[j]
+      matchvec <- c()
+      param_names_vec <- strsplit(param_names, ":")[[1]]
+
+      if(length(param_names_vec) == length(aovtrm)) {
+
+        # split up interactions and get a vector
+        for(k in 1:length(param_names_vec)) {
+
+          # Check for the correctness of each term in the vector
+          amatch<-agrep(aovtrm[k], param_names_vec[k])
+
+          if(length(amatch) == 0) {
+            amatch <- 0
+          }
+
+          matchvec[length(matchvec)+1] <- amatch
+        }
+
+        if(all(matchvec == 1)) {
+          newParmEst$df[j] <- denDF
+          newParmEst$Probt[j] <- 2*pt(-abs(newParmEst$t.value[j]), df = denDF)
+        }
+      }
+    }
+  }
+
+  #Assign the Intercept to be tested against the residual dfs
+  if(row.names(newParmEst)[1] == "(Intercept)"){
+    denDF<-basic_aov_dfs[nrow(basic_aov_dfs), "df"]
+
+    newParmEst$df[1] <- denDF
+    newParmEst$Probt[1] <- 2*pt(-abs(newParmEst$t.value[1]), df = denDF)
+  }
+
+  class(newParmEst) <- c("bdf", "nlme", "data.frame")
+  y_name<- names(model$modelInfo$respCol)
+
+  if (type == 3) {
+    attr(aod, "heading") <-  paste("Conditional model:", "\n\nResponse: ", y_name)
+  } else if (type == 2){
+    attr(aod, "heading") <-  paste("Conditional model:", "\n\nResponse: ", y_name)
+  }
+
+  return(newParmEst)
+}
+

@@ -235,7 +235,7 @@ inner_outer_summary <- function(model = model) {
   for(i in 1:nrow(basic_aov_dfs)) {
     #query the anova table term
     aovtrm <- strsplit(row.names(basic_aov_dfs)[i], ":")[[1]]
-    denDF <- basic_aov_dfs$denDF[i]
+    denDF <- basic_aov_dfs$df[i]
 
     for(j in 1:nrow(newParmEst)) {
 

@@ -13,18 +13,19 @@ summary.bdf <- function (object){
   }
 
   if(c2 == "inner_outer"){
-
     out <- inner_outer_summary(object)
     print(out)
-
   } else if(c2 == "nlme") {
     out <- nlme_summary(object)
+    print(out)
+  } else if(c2 == "containment") {
+    out <- containment_summary(object)
     print(out)
   }
 }
 
 
-#====================================== Summary ===================================================
+#====================================== Print ===================================================
 
 #' Print methods
 #'
