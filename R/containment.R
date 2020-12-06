@@ -55,7 +55,7 @@ containment_aov <- function(model = model, type = type){
 
     #=================================================== Random Intercept Part ============================================================
 
-    #if(rule == "int"){
+    if(rule == "int"){
       if(!is.na(datacls[1])){
         for(j in 1:nrow(random)){
           rtrm<-strsplit(random$terms[j], ":")[[1]]
@@ -83,9 +83,9 @@ containment_aov <- function(model = model, type = type){
       } else {
         fixed$denDf[i] <- random$df[nrow(random)]
       }
-    # } else {
-    #   fixed$denDf[i] <- NA
-    # }
+    } else {
+      fixed$denDf[i] <- NA
+    }
   }
 
   # Place DFs in the output data frame

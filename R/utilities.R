@@ -121,7 +121,7 @@ model_properties <- function(model){
 
       # Catch any slope effects that are not specified as fixed effects in prop_out
       if(identical(slope_class, character(0))){
-        slope_class <- class(model$frame[ ,slope_term])
+        slope_class <- class(model$frame[ ,eval_slope])
       }
     }
 
