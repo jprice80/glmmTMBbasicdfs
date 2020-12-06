@@ -8,9 +8,9 @@
 #' @param model a \code{\link{glmmTMB}} model object
 #' @param type type of test, \code{II, III, 2, 3}. Roman numerals are equivalent
 #'     to the corresponding Arabic numerals.
-#' @param ddf the method for computing the denominator degrees of freedom and F-statistics.
-#'     ddf = \code{\link{nlme}} corresponds to inner-outer denominator degrees of freedom
-#'     rules used by \code{\link{nlme}}. ddf = \code{inner-outer} primarily corresponds
+#' @param method the method for computing the denominator degrees of freedom and F-statistics.
+#'     method = \code{\link{nlme}} corresponds to inner-outer denominator degrees of freedom
+#'     rules used by \code{\link{nlme}}. method = \code{inner-outer} primarily corresponds
 #'     to classic \code{\link{nlme}} denominator degrees of freedom calculations but
 #'     makes additional corrections for random slope models. \code{containment} corresponds
 #'     to the SAS default degrees of freedom calculations for generalized linear mixed models.
@@ -28,7 +28,7 @@
 #' @export
 #'
 #' @examples Insert examples here later
-anova <- function(model, type = 3, ddf = "containment", test.statistic="F", contr_sum = TRUE){
+anova <- function(model, method = "containment", type = 3, test.statistic="F", contr_sum = TRUE){
 
   if (class(model) != "glmmTMB") {
     stop ("Only glmmTMB models are supported")
@@ -50,11 +50,11 @@ anova <- function(model, type = 3, ddf = "containment", test.statistic="F", cont
   }
 
   if(test.statistic == "F"){
-    if(ddf == "nlme") {
+    if(method == "nlme") {
       aov_out <- nlme_aov(model, type)
-    } else if (ddf == "inner-outer") {
+    } else if (method == "inner-outer") {
       aov_out <- inner_outer_aov(model, type)
-    } else if (ddf == "containment") {
+    } else if (method == "containment") {
       aov_out <- containment_aov(model, type)
     } else {
       stop ("Only nlme, inner-outter, and containment methods are supported at this time")
