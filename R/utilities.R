@@ -94,6 +94,7 @@ model_properties <- function(model){
   for(i in 1:nrow(prop_out)) {
 
     slope_term <- prop_out$slopeterm[i]
+    covar <- prop_out$covar[i]
 
     # Identify the slope class
     if(slope_term != "1" && is.na(slope_term) == FALSE){
@@ -124,8 +125,14 @@ model_properties <- function(model){
       }
     }
 
+
+
+
+    #Need to fix this for categorical random slope
+
     if(is.na(slope_term) == FALSE) {
-      if(slope_term == "1" || slope_class == "factor") {
+      #if(slope_term == "1" || slope_class == "factor")
+      if(slope_term == "1") {
         prop_out$termtype[i] <- "int"
       } else if (containsneg1 == TRUE || containspls0 == TRUE) {
         prop_out$termtype[i] <- "slope"
@@ -233,8 +240,14 @@ aov_formula_writer <- function(model){
   for(i in 1:num_random_eq) {
 
     eq <- unlist(names(model$modelInfo$reStruc$condReStruc)[i])
-    terms <- trimws(strsplit(as.character(eq), "\\+")[[1]])
 
+    # Replace -1 with +0
+    containsneg1 <- grepl("- 1", eq, fixed = TRUE)
+    if(containsneg1 == TRUE){
+      eq <- gsub("- 1", "+ 0", eq)
+    }
+
+    terms <- trimws(strsplit(as.character(eq), "\\+")[[1]])
     # Identify the type of random effects we have
     if(trimws(strsplit(terms, "\\|")[[1]])[[1]] == "1") {
       model_type <- "int"

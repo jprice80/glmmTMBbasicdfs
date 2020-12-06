@@ -55,7 +55,7 @@ containment_aov <- function(model = model, type = type){
 
     #=================================================== Random Intercept Part ============================================================
 
-    if(rule == "int"){
+    #if(rule == "int"){
       if(!is.na(datacls[1])){
         for(j in 1:nrow(random)){
           rtrm<-strsplit(random$terms[j], ":")[[1]]
@@ -83,9 +83,9 @@ containment_aov <- function(model = model, type = type){
       } else {
         fixed$denDf[i] <- random$df[nrow(random)]
       }
-    } else {
-      fixed$denDf[i] <- NA
-    }
+    # } else {
+    #   fixed$denDf[i] <- NA
+    # }
   }
 
   # Place DFs in the output data frame
@@ -137,7 +137,7 @@ containment_aov <- function(model = model, type = type){
     }
   }
 
-  #Next find the correct DF for each fixed effect term
+  # Next find the correct DF for each fixed effect term
   rules_ready <- data.frame(terms = row.names(TMBaov))
   rules2 <- rules %>% select(terms, rules) %>% distinct()
   rules2 <- left_join(rules_ready, rules2, by="terms")
@@ -150,8 +150,15 @@ containment_aov <- function(model = model, type = type){
     rule <- rules2$rules[i]
     term <- rules2$terms[i]
 
+    # Find the current df as calculated by the random intercept computation
+    # Consider this a possible df value
+    # May need to be changed later to not consider this
+    curdf <- df_output$denDf[i]
+
     if(rule != "int"){
-      random_vec <- c()
+
+      #start the vector with the random intercept value
+      random_vec <- c(curdf)
       for(j in 1:nrow(df_output2)){
         interact <- grepl("\\:", df_output2$terms[j])
         if(interact == TRUE){
