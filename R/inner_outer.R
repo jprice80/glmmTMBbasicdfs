@@ -73,7 +73,12 @@ inner_outer_aov <- function(model = model, type = type){
         for(j in 1:nrow(random)){
           rtrm<-strsplit(random$terms[j], ":")[[1]]
 
-          if(rtrm[1] != "Residuals"){
+          #new addition for random slope rules (not sure if this is correct)
+          #need to update Inner_outter if it is
+          #also see line 47
+          rand_rules <- random$rules[j]
+
+          if(rtrm[1] != "Residuals" && (rand_rules != "slope" || is.na(rand_rules))){
 
             if(length(rtrm) == 1 && length(ftrm) == 1){
               temp<-suppressMessages(model$frame %>% select(rtrm, ftrm) %>% group_by(!!sym(rtrm)) %>% summarise(count = n_distinct(!!sym(ftrm), na.rm = TRUE)))
