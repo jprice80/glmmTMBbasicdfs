@@ -41,10 +41,26 @@ containment_aov <- function(model = model, type = type){
   # Identify the random terms
   random <- basic_aov_dfs[basic_aov_dfs$vartype=="random", ]
 
+  # Correctly identify random slope terms only involved in random effects
+  #new addition for random slope rules (not sure if this is correct)
+  #need to update Inner_outter if it is
+  for(i in 1:nrow(random)) {
+    rtrm <- strsplit(random$terms[i], ":")[[1]]
+
+    for(j in 1:nrow(fixed)) {
+      ftrm <- strsplit(fixed$interceptterm[j], ":")[[1]]
+
+      if(all(rtrm %in% ftrm)) {
+        rlz <- fixed$rules[j]
+        random$rules[i] <- rlz
+      }
+    }
+  }
+
   #sort the data by size to make sure the right df is chosen
   random<-random[order(random$df),]
 
-  # Apply the inner-outer DFs for random intercept terms
+  # Apply the containment DFs for random intercept terms
   fixed$denDf <- NA
   fixed$vartype <- NULL
   fixed$covar <- NULL
@@ -60,7 +76,12 @@ containment_aov <- function(model = model, type = type){
         for(j in 1:nrow(random)){
           rtrm<-strsplit(random$terms[j], ":")[[1]]
 
-          if(rtrm[1] != "Residuals"){
+          #new addition for random slope rules (not sure if this is correct)
+          #need to update Inner_outter if it is
+          #also see line 47
+          rand_rules <- random$rules[j]
+
+          if(rtrm[1] != "Residuals" && (rand_rules != "slope" || is.na(rand_rules))){
 
             if(all(datacls %in% "factor")==TRUE){
 

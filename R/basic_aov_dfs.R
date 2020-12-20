@@ -67,8 +67,8 @@ base_aov_dfs<-function(model){
 
   basic_dfs_out$basic_dfs_effectnum <- NULL
 
-  resid_val <- N - sum(basic_dfs_out$df, na.rm = TRUE)
-
+  #resid_val <- N - sum(basic_dfs_out$df, na.rm = TRUE)
+  resid_val <- resid_calc(model)
   resids <- data.frame(terms="Residuals", df=resid_val)
   basic_dfs_out <- rbind(basic_dfs_out, resids)
 
@@ -167,7 +167,7 @@ data_aov_dfs <- function(formula, data){
   basic_dfs_out$basic_dfs_effectnum <- NULL
 
   resid_val <- N - sum(basic_dfs_out$df, na.rm = TRUE)
-
+  #resid_val <- resid_calc(model)
   resids <- data.frame(terms="Residuals", df=resid_val)
   basic_dfs_out <- rbind(basic_dfs_out, resids)
 
@@ -307,3 +307,14 @@ individual_rint_rslope <- function(lhs, rhs, data) {
 
   return(df)
 }
+
+# residual calc
+resid_calc <- function(model){
+
+  resid_form <- aov_formula_writer(model)
+  df_resid <- data_aov_dfs(resid_form, data = model$frame)
+  resid <- df_resid$df[nrow(df)]
+  return(resid)
+}
+
+

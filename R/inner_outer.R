@@ -43,6 +43,20 @@ inner_outer_aov <- function(model = model, type = type){
   #sort the data by size to make sure the right df is chosen
   random<-random[order(random$df),]
 
+  # Correctly identify random slope terms only involved in random effects
+  for(i in 1:nrow(random)) {
+    rtrm <- strsplit(random$terms[i], ":")[[1]]
+
+    for(j in 1:nrow(fixed)) {
+      ftrm <- strsplit(fixed$interceptterm[j], ":")[[1]]
+
+      if(all(rtrm %in% ftrm)) {
+        rlz <- fixed$rules[j]
+        random$rules[i] <- rlz
+      }
+    }
+  }
+
   # Apply the inner-outer DFs for random intercept terms
   fixed$denDf <- NA
   fixed$vartype <- NULL

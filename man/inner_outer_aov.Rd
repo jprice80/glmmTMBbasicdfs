@@ -18,3 +18,4 @@ a \code{data.frame}
 \description{
 Inner-Outer ANOVA and Degrees of Freedom Calculations
 }
+\keyword{internal}

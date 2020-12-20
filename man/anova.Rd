@@ -6,8 +6,8 @@
 \usage{
 anova(
   model,
+  method = "containment",
   type = 3,
-  ddf = "inner-outer",
   test.statistic = "F",
   contr_sum = TRUE
 )
@@ -15,16 +15,16 @@ anova(
 \arguments{
 \item{model}{a \code{\link{glmmTMB}} model object}
 
-\item{type}{type of test, \code{II, III, 2, 3}. Roman numerals are equivalent
-to the corresponding Arabic numerals.}
-
-\item{ddf}{the method for computing the denominator degrees of freedom and F-statistics.
-ddf = \code{\link{nlme}} corresponds to inner-outer denominator degrees of freedom
-rules used by \code{\link{nlme}}. ddf = \code{inner-outer} primarily corresponds
+\item{method}{the method for computing the denominator degrees of freedom and F-statistics.
+method = \code{\link{nlme}} corresponds to inner-outer denominator degrees of freedom
+rules used by \code{\link{nlme}}. method = \code{inner-outer} primarily corresponds
 to classic \code{\link{nlme}} denominator degrees of freedom calculations but
 makes additional corrections for random slope models. \code{containment} corresponds
 to the SAS default degrees of freedom calculations for generalized linear mixed models.
 Default is \code{inner-outer}.}
+
+\item{type}{type of test, \code{II, III, 2, 3}. Roman numerals are equivalent
+to the corresponding Arabic numerals.}
 
 \item{test.statistic}{designates whether the \code{F} or \code{Chisq} distribution
 is used to compute the ANOVA tables.}

@@ -18,3 +18,4 @@ a \code{data.frame}
 \description{
 nlme ANOVA and Degrees of Freedom Calculations
 }
+\keyword{internal}
