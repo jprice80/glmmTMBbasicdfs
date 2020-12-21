@@ -44,15 +44,22 @@ inner_outer_aov <- function(model = model, type = type){
   random<-random[order(random$df),]
 
   # Correctly identify random slope terms only involved in random effects
+  #new addition for random slope rules (not sure if this is correct)
+  #need to update Inner_outter if it is
   for(i in 1:nrow(random)) {
     rtrm <- strsplit(random$terms[i], ":")[[1]]
 
     for(j in 1:nrow(fixed)) {
       ftrm <- strsplit(fixed$interceptterm[j], ":")[[1]]
 
-      if(all(rtrm %in% ftrm)) {
+      if(all(ftrm %in% rtrm)) {
         rlz <- fixed$rules[j]
-        random$rules[j] <- rlz
+
+        for(k in 1:nrow(random)){
+          rtrm2 <- strsplit(random$terms[k], ":")[[1]]
+          if(all(!is.na(match(ftrm, rtrm2))))
+            random$rules[k] <- rlz
+        }
       }
     }
   }
