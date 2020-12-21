@@ -29,6 +29,8 @@ containment_aov <- function(model = model, type = type){
   rules <- best_rules(model)
   basic_aov_dfs <- left_join(basic_aov_dfs, rules, by="terms")
 
+  basic_aov_dfs[nrow(basic_aov_dfs), "df"] <- resid_val
+
   # Correct the terms if no intercept is estimated
   if(row.names(TMBaov)[1] == "(Intercept)") {
     fixed <- basic_aov_dfs[basic_aov_dfs$vartype=="fixed", ]
@@ -52,7 +54,7 @@ containment_aov <- function(model = model, type = type){
 
       if(all(rtrm %in% ftrm)) {
         rlz <- fixed$rules[j]
-        random$rules[i] <- rlz
+        random$rules[j] <- rlz
       }
     }
   }

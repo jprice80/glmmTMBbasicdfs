@@ -67,15 +67,21 @@ base_aov_dfs<-function(model){
 
   basic_dfs_out$basic_dfs_effectnum <- NULL
 
+  #best for random int and int_slope?
   #resid_val <- N - sum(basic_dfs_out$df, na.rm = TRUE)
+  #best for random slope and int_slope
   resid_val <- resid_calc(model)
+
+  #resid_val <- NA
+
+
   resids <- data.frame(terms="Residuals", df=resid_val)
   basic_dfs_out <- rbind(basic_dfs_out, resids)
 
-  if(any(is.na(basic_dfs_out$df))){
-    warning("Unable to determine fully determine degrees of freedom for this model using the specified method.
-            Computation continues in spite of this warning. Interpret this model with caution.")
-  }
+  # if(any(is.na(basic_dfs_out$df))){
+  #   warning("Unable to determine fully determine degrees of freedom for this model using the specified method.
+  #           Computation continues in spite of this warning. Interpret this model with caution.")
+  # }
 
   # Define fixed and random terms
   basic_dfs_out$vartype <- as.character(NA)
@@ -313,7 +319,7 @@ resid_calc <- function(model){
 
   resid_form <- aov_formula_writer(model)
   df_resid <- data_aov_dfs(resid_form, data = model$frame)
-  resid <- df_resid$df[nrow(df)]
+  resid <- df_resid$df[nrow(df_resid)]
   return(resid)
 }
 

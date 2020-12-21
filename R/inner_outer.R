@@ -52,7 +52,7 @@ inner_outer_aov <- function(model = model, type = type){
 
       if(all(rtrm %in% ftrm)) {
         rlz <- fixed$rules[j]
-        random$rules[i] <- rlz
+        random$rules[j] <- rlz
       }
     }
   }
